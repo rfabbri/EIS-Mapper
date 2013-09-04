@@ -115,8 +115,8 @@ vmaxmq=max(matZ)
 vminlmq=min(lmatZ)
 vmaxlmq=max(lmatZ)
 
-labels=["min"; "max"];
-[ok,vminlmq,vmaxlmq]=getvalue("Plot range for log",labels,list("vec",1,"vec",1),["1.1";"5"]);
+labels=["log min"; "log max"; "color mode (-1 for no line)"];
+[ok,vminlmq,vmaxlmq,colormode]=getvalue("Plot options",labels,list("vec",1,"vec",1,"vec",1),["1.1";"5";"2"]);
 
 
 gg=messagebox(["What format do you wish to generate the images?"],"EIS - Map Generator","message",["2D image" "3D image", "Both"],'modal');
@@ -179,6 +179,9 @@ clf(3)
 scf(3)
 xset("colormap",jetcolormap(512))
 plot3d1(b,a,matPhas)
+e=gce();
+e.hiddencolor=-1;
+e.color_mode=colormode;
 colorbar(0,90)
 xtitle( 'Mapa de angulo de fase', 'Experiment number', 'log (f) /Hz', 'angulo' , boxed = 1 )
 title('Phase / Degree','position',[160.0 4.5])
@@ -193,6 +196,9 @@ clf(4)
 scf(4)
 xset("colormap",jetcolormap(512))
 plot3d1(b,a,matZ)
+e=gce();
+e.hiddencolor=-1;
+e.color_mode=colormode;
 colorbar(vminmq,100000)
 xtitle( 'Mapa de impedancia', 'Experiment number', 'log (f) / Hz', '|Z| / Ohm' , boxed = 1 )
 title('|Z| / Ohm','position',[160.0 4.5])
@@ -207,12 +213,15 @@ clf(5)
 scf(5)
 xset("colormap",jetcolormap(512))
 plot3d1(b,a,lmatZ);
+e=gce();
+e.hiddencolor=-1;
+e.color_mode=colormode;
 //plot3d1(b,a,lmatZ, flag=[-1,1,3], ebox=[min(b) max(b) min(a) max(a) 1.1 5])
 //colorbar(1.1,5)
-a=gca();
-a.tight_limits = 'on';
-a.data_bounds(1,3) = vminlmq;
-a.data_bounds(2,3) = vmaxlmq;
+ax=gca();
+ax.tight_limits = 'on';
+ax.data_bounds(1,3) = vminlmq;
+ax.data_bounds(2,3) = vmaxlmq;
 colorbar(vminlmq,vmaxlmq)
 xtitle( 'Mapa de impedancia', 'Experiment number', 'log (f) / Hz', 'log(|Z|/Ohm)' , boxed = 1 )
 title('log(|Z|/Ohm)','position',[165.0 4.5])
