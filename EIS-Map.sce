@@ -92,7 +92,7 @@ for i=1:nexp
         end
     end
 
-wg=messagebox(["Chosse an unity for the x axis?"],"EIS - Map Generator","message",["Potencial" "Number of experiments"],'modal'); 
+wg=messagebox(["Chosse a unit for the x axis"],"EIS - Map Generator","message",["Potencial" "Number of experiments"],'modal'); 
 
 if wg==1 then
     a(:)=log10 (vfreq(:))
@@ -111,16 +111,20 @@ vminaf=min(matPhas)
 vmaxaf=max(matPhas)
 vminmq=min(matZ)
 vmaxmq=max(matZ)
-vminlmq=min(lmatZ)
-vmaxlmq=max(lmatZ)
+
+if ~exists('vminlmq')
+  vminlmq=min(lmatZ)
+end
+
+if ~exists('vmaxlmq')
+  vmaxlmq=max(lmatZ)
+end
+
+gg=messagebox(["What format do you wish to generate the images?"],"EIS - Map Generator","message",["2D image" "3D image", "Both"],'modal');
 
 
 
-
-
-gg=messagebox(["What format do you wish to generate the images?"],"EIS - Map Generator","message",["2D image" "3D image"],'modal');
-
-if gg==1 then
+if gg==1 | gg==3 then
         
 
 clf(0)
@@ -155,9 +159,9 @@ clf(2)
 scf(2)
 xset("colormap",jetcolormap(512))
 grayplot(b,a,lmatZ)
-//colorbar(vminlmq,vmaxlmq)
+colorbar(vminlmq,vmaxlmq)
 //colorbar(0,6)
-colorbar(1.1,5)
+//colorbar(1.1,5)
 xtitle( 'Mapa de impedancia', eix, 'log (f / Hz)', 'angulo' , boxed = 1 )
 title('log(|Z|/Ohm cm²)','position',p1)
 title('log(|Z|/Ohm cm²)','fontsize',3)
@@ -170,7 +174,7 @@ filename='logimpedance'
 messagebox(["The generated images are avaiable"],"EIS - Map Generator","message",["OK"],'modal');
 end
 
-if gg==2 then
+if gg==2 | gg==3 then
     
 clf(3)
 scf(3)
@@ -205,11 +209,12 @@ scf(5)
 xset("colormap",jetcolormap(512))
 plot3d1(b,a,lmatZ);
 //plot3d1(b,a,lmatZ, flag=[-1,1,3], ebox=[min(b) max(b) min(a) max(a) 1.1 5])
-colorbar(1.1,5)
+//colorbar(1.1,5)
 a=gca();
 a.tight_limits = 'on';
-a.data_bounds(1,3) = 1.1;
-a.data_bounds(2,3) = 5;
+a.data_bounds(1,3) = vminlmq;
+a.data_bounds(2,3) = vmaxlmq;
+colorbar(vminlmq,vmaxlmq)
 xtitle( 'Mapa de impedancia', 'Experiment number', 'log (f) / Hz', 'log(|Z|/Ohm)' , boxed = 1 )
 title('log(|Z|/Ohm)','position',[165.0 4.5])
 title('log(|Z|/Ohm)','fontsize',3)
