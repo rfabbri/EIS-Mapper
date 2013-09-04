@@ -107,18 +107,17 @@ eix='Experiment number'
 
 end
 
+
 vminaf=min(matPhas)
 vmaxaf=max(matPhas)
 vminmq=min(matZ)
 vmaxmq=max(matZ)
+vminlmq=min(lmatZ)
+vmaxlmq=max(lmatZ)
 
-if ~exists('vminlmq')
-  vminlmq=min(lmatZ)
-end
+labels=["min"; "max"];
+[ok,vminlmq,vmaxlmq]=getvalue("Plot range for log",labels,list("vec",1,"vec",1),["1.1";"5"]);
 
-if ~exists('vmaxlmq')
-  vmaxlmq=max(lmatZ)
-end
 
 gg=messagebox(["What format do you wish to generate the images?"],"EIS - Map Generator","message",["2D image" "3D image", "Both"],'modal');
 
