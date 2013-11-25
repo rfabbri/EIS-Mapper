@@ -1,6 +1,9 @@
 EIS-Mapper - Electrochemical Impedance Spectroscopy Mapper
 ==========================================================
 
+EIS-Mapper is a software package to generate and plot 2D and 3D EIS maps using
+Scilab. 
+
 
 Requirements
 ------------
@@ -8,11 +11,23 @@ Requirements
 * Scilab 5.4.1 or later
 * Any operating system: Linux, Windows, Apple OS X
 
+Usage
+-----
+
+Inside Scilab, enter the following command:
+```scilab
+exec EIS-Map.sce
+```
+
+* The \*.xls spreadsheet files are examples of inputs to the software.
+
+
 
 Home Page
 ---------
 
-www.labcor.iprj.uerj.br
+* www.labcor.iprj.uerj.br - Corrosion Laboratory of the Polytechnic Institute at
+  the Rio de Janeiro State University
 
 
 Main Authors
