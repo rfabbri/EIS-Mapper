@@ -20,7 +20,10 @@ Main Authors
 License
 -------
 
-This software is Copyright (C) 2013 Ivan Napoleao Bastos and the main authors.
+This software is Copyright (C) 2013 Ivan Napoleao Bastos and the Main Authors.
+
+You may use it and modify it, provided you kindly cite the original authors and
+in addition follow the GPL license terms as described in the file COPYING.
 
 If you would like a different license, please contact us.
 
