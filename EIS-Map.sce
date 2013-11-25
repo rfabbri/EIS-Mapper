@@ -16,7 +16,6 @@ linha1 = Value(1,:);
 Value(1,:) = [];
 
 cb = SST(TextInd(1,:))
-id_current = find(cb== 'Current (A)');
 id_frequency = find(cb== 'Frequency (Hz)')
 id_z = find(cb=='|Z| (ohms)')
 id_phase = find(cb=='Phase of Z (deg)')
@@ -25,10 +24,8 @@ id_ddp= find(cb=='Potential (V)')
 
 
 labels=["area"];
-[ok,Area]=getvalue("Sample area(cm²)",labels,list("vec",1),["0.5"])
+[ok,Area]=getvalue("Sample area (cm²)",labels,list("vec",1),["1.0"])
 
-
-col_current = Value(:,id_current);
 idc=1;   
 numfreq=0
 i=1
@@ -80,7 +77,7 @@ I=1
 
 for i=1:nexp
     for j=1:numfreq
-        lmatZ(i,j)=log(abs(vZ(I)));
+        lmatZ(i,j)=log10(abs(vZ(I)));
             matZ(i,j)=vZ(I);
             if (abs(vPhas(I))>90) then
                 matPhas(i,j)=(abs(vPhas(I))-180);
@@ -89,22 +86,21 @@ for i=1:nexp
             end
             
             I=I+1
-        end
     end
+end
 
-wg=messagebox(["Chosse a unit for the x axis"],"EIS - Map Generator","message",["Potencial" "Number of experiments"],'modal'); 
+wg=messagebox(["Chosse a unit for the x axis"],"EIS - Map Generator","message",["Potential" "Number of experiments"],'modal'); 
 
 if wg==1 then
     a(:)=log10 (vfreq(:))
     b(:)=vddp(:)
     eix='E (V x SCE)'
     p1=[max(vddp)+0.2 4.5]
-    else
-a(:)=log10 (vfreq(:))
-b(:)=1:nexp
-p1=[nexp+10 4.5]
-eix='Experiment number'
-
+else
+    a(:)=log10 (vfreq(:))
+    b(:)=1:nexp
+    p1=[nexp+10 4.5]
+    eix='Experiment number'
 end
 
 
@@ -115,8 +111,9 @@ vmaxmq=max(matZ)
 vminlmq=min(lmatZ)
 vmaxlmq=max(lmatZ)
 
-labels=["log min"; "log max"; "color mode (-1 for no line)"];
-[ok,vminlmq,vmaxlmq,colormode]=getvalue("Plot options",labels,list("vec",1,"vec",1,"vec",1),["1.1";"5";"2"]);
+labels=["phase min (deg)"; "phase max (deg)"; "log min (Ohm)"; "log max (Ohm)"; "3D color mode (-1 for no line)"];
+[ok,phasemin, phasemax, vminlmq,vmaxlmq,colormode]=...
+getvalue("Plot options", labels, list("vec",1,"vec",1,"vec",1,"vec",1,"vec",1),["0";"90";"0";"7";"2"]);
 
 
 gg=messagebox(["What format do you wish to generate the images?"],"EIS - Map Generator","message",["2D image" "3D image", "Both"],'modal');
@@ -129,8 +126,8 @@ if gg==1 | gg==3 then
 clf(0)
 scf(0)
 xset("colormap",jetcolormap(512))
+colorbar(phasemin,phasemax)
 grayplot(b,a,matPhas)
-colorbar(0,90)
 xtitle( 'Mapa de angulo de fase', eix, 'log (f /Hz)', 'angulo' , boxed = 1 )
 title('Phase / Degree','position',p1)
 title('Phase / Degree','fontsize',3)
@@ -143,8 +140,8 @@ filename='phase degree'
 clf(1)
 scf(1)
 xset("colormap",jetcolormap(512))
-grayplot(b,a,matZ)
 colorbar(vminmq,vmaxmq)
+grayplot(b,a,matZ)
 xtitle( 'Mapa de impedancia', eix, 'log (f / Hz)', 'angulo' , boxed = 1 )
 title('|Z| / Ohm cm²','position',p1)
 title('|Z| / Ohm cm²','fontsize',3);
@@ -157,8 +154,8 @@ filename='impedance'
 clf(2)
 scf(2)
 xset("colormap",jetcolormap(512))
-grayplot(b,a,lmatZ)
 colorbar(vminlmq,vmaxlmq)
+grayplot(b,a,lmatZ)
 //colorbar(0,6)
 //colorbar(1.1,5)
 xtitle( 'Mapa de impedancia', eix, 'log (f / Hz)', 'angulo' , boxed = 1 )
@@ -178,12 +175,12 @@ if gg==2 | gg==3 then
 clf(3)
 scf(3)
 xset("colormap",jetcolormap(512))
+colorbar(phasemin,phasemax)
 plot3d1(b,a,matPhas)
 e=gce();
 e.hiddencolor=-1;
 e.color_mode=colormode;
-colorbar(0,90)
-xtitle( 'Mapa de angulo de fase', 'Experiment number', 'log (f) /Hz', 'angulo' , boxed = 1 )
+xtitle( 'Mapa de angulo de fase', eix, 'log (f) /Hz', 'angulo' , boxed = 1 )
 title('Phase / Degree','position',[160.0 4.5])
 title('Phase / Degree','fontsize',3)
 filename='phase degree'
@@ -195,12 +192,12 @@ filename='phase degree'
 clf(4)
 scf(4)
 xset("colormap",jetcolormap(512))
+colorbar(vminmq,100000)
 plot3d1(b,a,matZ)
 e=gce();
 e.hiddencolor=-1;
 e.color_mode=colormode;
-colorbar(vminmq,100000)
-xtitle( 'Mapa de impedancia', 'Experiment number', 'log (f) / Hz', '|Z| / Ohm' , boxed = 1 )
+xtitle( 'Mapa de impedancia', eix, 'log (f) / Hz', '|Z| / Ohm' , boxed = 1 )
 title('|Z| / Ohm','position',[160.0 4.5])
 title('|Z| / Ohm','fontsize',3);
 filename='impedance'
@@ -212,6 +209,7 @@ filename='impedance'
 clf(5)
 scf(5)
 xset("colormap",jetcolormap(512))
+colorbar(vminlmq,vmaxlmq)
 plot3d1(b,a,lmatZ);
 e=gce();
 e.hiddencolor=-1;
@@ -222,8 +220,7 @@ ax=gca();
 ax.tight_limits = 'on';
 ax.data_bounds(1,3) = vminlmq;
 ax.data_bounds(2,3) = vmaxlmq;
-colorbar(vminlmq,vmaxlmq)
-xtitle( 'Mapa de impedancia', 'Experiment number', 'log (f) / Hz', 'log(|Z|/Ohm)' , boxed = 1 )
+xtitle( 'Mapa de impedancia', eix, 'log (f) / Hz', 'log(|Z|/Ohm)' , boxed = 1 )
 title('log(|Z|/Ohm)','position',[165.0 4.5])
 title('log(|Z|/Ohm)','fontsize',3)
 filename='logimpedance'
