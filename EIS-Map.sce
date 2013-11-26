@@ -500,6 +500,9 @@ if ng == 1 then
         eix='Experiment Number'
         surf(matrizNexp,matRealZ,matImagZ);
     end
+    e=gce();
+    e.hiddencolor=-1;
+    e.color_mode=colormode;
     xtitle( 'Nyquist Diagram', eix, 'Real', 'Imaginary' , boxed = 1)
     filename='nyquist'
     eixos=get("current_axes")
