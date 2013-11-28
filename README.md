@@ -16,7 +16,7 @@ Usage
 
 Inside Scilab, enter the following command:
 ```scilab
-exec EIS-Map.sce
+exec EIS-Mapper.sce
 ```
 
 * The \*.xls spreadsheet files are examples of inputs to the software.
