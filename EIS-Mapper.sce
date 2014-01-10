@@ -497,6 +497,11 @@ if ng == 1 then
     clf(7)
     scf(7)
     xset("colormap",jetcolormap(64)); 
+    colorbar(0,max(matImagZ));
+    cbar = gce();
+    cbar.parent.title.text = "Imaginary Component";
+    cbar.parent.title.fill_mode = "on"
+    cbar.parent.title.font_size = 3
     if wg==1 then
         eix='E (V x SCE)'
         surf(matPot,matRealZ,matImagZ);
