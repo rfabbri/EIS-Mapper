@@ -395,15 +395,16 @@ if gg==2 | gg==3 then
     
 clf(3)
 
-
 scf(3)
 xset("colormap",jetcolormap(512))
-colorbar(phasemin,phasemax)
+colorbar(vminaf,vmaxaf)
 cbar = gce();
 cbar.parent.title.text = "Phase / deg";
 cbar.parent.title.fill_mode = "on"
 cbar.parent.title.font_size = 3
+
 plot3d1(b,a,matPhas)
+
 e=gce();
 e.hiddencolor=-1;
 e.color_mode=colormode;
@@ -414,6 +415,9 @@ eixos.title.font_size = 3;
 eixos.x_label.font_size = 3;
 eixos.y_label.font_size = 3;
 eixos.z_label.font_size = 3;
+eixos.tight_limits = 'on';
+eixos.data_bounds(1,3) = phasemin;
+eixos.data_bounds(2,3) = phasemax;
 
 if wg==1 then
     eixos.x_ticks = tlist(["ticks","locations","labels"], vet_nexp, pot_string);
@@ -456,7 +460,8 @@ end
 clf(5)
 scf(5)
 xset("colormap",jetcolormap(512))
-colorbar(vminlmq,vmaxlmq)
+
+colorbar(min(lmatZ),max(lmatZ))
 cbar = gce();
 cbar.parent.title.text = "log(|Z|/Ohm.cm²)";
 cbar.parent.title.fill_mode = "on"
@@ -473,14 +478,13 @@ ax.data_bounds(1,3) = vminlmq;
 ax.data_bounds(2,3) = vmaxlmq;
 xtitle( 'Impedance Map', eix, 'log (f) / Hz', 'log(|Z|/Ohm.cm²)' , boxed = 1 )
 filename='logimpedance'
-eixos=get("current_axes")
-eixos.title.font_size = 3;
-eixos.x_label.font_size = 3;
-eixos.y_label.font_size = 3;
-eixos.z_label.font_size = 3;
+ax.title.font_size = 3;
+ax.x_label.font_size = 3;
+ax.y_label.font_size = 3;
+ax.z_label.font_size = 3;
 
 if wg==1 then
-    eixos.x_ticks = tlist(["ticks","locations","labels"], vet_nexp, pot_string);
+    ax.x_ticks = tlist(["ticks","locations","labels"], vet_nexp, pot_string);
 end
 
 //xs2pdf(2,filename)
@@ -493,6 +497,11 @@ if ng == 1 then
     clf(7)
     scf(7)
     xset("colormap",jetcolormap(64)); 
+    colorbar(0,max(matImagZ));
+    cbar = gce();
+    cbar.parent.title.text = "Imaginary Component";
+    cbar.parent.title.fill_mode = "on"
+    cbar.parent.title.font_size = 3
     if wg==1 then
         eix='E (V x SCE)'
         surf(matPot,matRealZ,matImagZ);
