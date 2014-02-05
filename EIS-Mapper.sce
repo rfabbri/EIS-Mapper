@@ -21,6 +21,7 @@ id_z = find(cb=='|Z| (ohms)')
 id_phase = find(cb=='Phase of Z (deg)')
 id_vezes= find(cb=='Point')
 id_ddp= find(cb=='Potential (V)')
+id_current= find(cb=='Current (A)')
 
 //////////////////////// Pre-test ///////////////////////////
 
@@ -76,6 +77,8 @@ ind=1
 for ind=1:vnv
     if (vfreq(1)==Value(ind,id_frequency)) then
         vddp(idc)=Value(ind,id_ddp);
+        vCurrent(idc)=Value(ind,id_current);
+        lvCurrent(idc)=log10(abs(Value(ind,id_current)*1000))
         idc=idc+1;
         nexp=nexp+1;
     end
@@ -266,6 +269,9 @@ getvalue("Plot options", labels, list("vec",1,"vec",1,"vec",1,"vec",1,"vec",1),[
 // Nyquist diagrams
 ng=messagebox(["Do you wish to generate the Nyquist diagrams?"],"EIS - Map Generator","message",["Yes" "No"],'modal');
 
+// Polarization superposition
+pg=messagebox(["Do you wish to plot the Polarization Curve over the maps?"],"EIS - Map Generator","message",["Yes" "No"],'modal');
+
 gg=messagebox(["What format do you wish to generate the images?"],"EIS - Map Generator","message",["2D image" "3D image", "Both"],'modal');
 
 
@@ -288,10 +294,34 @@ eixos.title.font_size = 3;
 eixos.x_label.font_size = 3;
 eixos.y_label.font_size = 3;
 eixos.z_label.font_size = 3;
-
 if wg==1 then
     eixos.x_ticks = tlist(["ticks","locations","labels"], vet_nexp, pot_string);
 end
+///////////////////////////////////////////////////////////////////////////
+// Polarization Curve Superposition
+if pg == 1 then
+    maxFreq = max(a);
+    maxCurrent = max(vCurrent);
+    for i = 1:length(vCurrent);
+        auxCurrent(i) = vCurrent(i)*maxFreq/maxCurrent;
+    end
+    a2=newaxes();
+    a2.y_location = 'right'; 
+    plot2d(b, lvCurrent,leg="Polarization Curve", style=[color("black")]);
+    xtitle( '', '', 'log  j (mA/cm²)', '' , boxed = 1)
+    a2.axes_visible = ["off","on","on"];
+    a2.filled = "off";
+    a2.y_label.font_size = 3;
+    curva= a2.children(1).children(1)
+    curva.thickness=3;
+    colorbar(phasemin,phasemax)
+    cbar = gce();
+    cbar.parent.title.text = "Phase / Deg";
+    cbar.parent.title.fill_mode = "on"
+    cbar.parent.title.font_size = 3
+end
+///////////////////////////////////////////////////////////////////////////
+
 
 //xs2pdf(0,filename)
 
@@ -314,10 +344,33 @@ eixos.title.font_size = 3;
 eixos.x_label.font_size = 3;
 eixos.y_label.font_size = 3;
 eixos.z_label.font_size = 3;
-
 if wg==1 then
     eixos.x_ticks = tlist(["ticks","locations","labels"], vet_nexp, pot_string);
 end
+///////////////////////////////////////////////////////////////////////////
+// Polarization Curve Superposition
+if pg == 1 then
+    maxFreq = max(a);
+    maxCurrent = max(vCurrent);
+    for i = 1:length(vCurrent);
+        auxCurrent(i) = vCurrent(i)*maxFreq/maxCurrent;
+    end
+    a2=newaxes();
+    a2.y_location = 'right'; 
+    plot2d(b, lvCurrent,leg="Polarization Curve", style=[color("black")]);
+    xtitle( '', '', 'log  j (mA/cm²)', '' , boxed = 1)
+    a2.axes_visible = ["off","on","on"];
+    a2.filled = "off";
+    a2.y_label.font_size = 3;
+    curva= a2.children(1).children(1)
+    curva.thickness=3;
+    colorbar(vminmq,vmaxmq)
+    cbar = gce();
+    cbar.parent.title.text = "|Z| / Ohm cm²";
+    cbar.parent.title.fill_mode = "on"
+    cbar.parent.title.font_size = 3
+end
+///////////////////////////////////////////////////////////////////////////
 
 //xs2pdf(1,filename)
 
@@ -342,11 +395,50 @@ eixos.title.font_size = 3;
 eixos.x_label.font_size = 3;
 eixos.y_label.font_size = 3;
 eixos.z_label.font_size = 3;
+if wg==1 then
+    eixos.x_ticks = tlist(["ticks","locations","labels"], vet_nexp, pot_string);
+end
+///////////////////////////////////////////////////////////////////////////
+// Polarization Curve Superposition
+if pg == 1 then
+    maxFreq = max(a);
+    maxCurrent = max(vCurrent);
+    for i = 1:length(vCurrent);
+        auxCurrent(i) = vCurrent(i)*maxFreq/maxCurrent;
+    end
+    a2=newaxes();
+    a2.y_location = 'right'; 
+    plot2d(b, lvCurrent,leg="Polarization Curve", style=[color("black")]);
+    xtitle( '', '', 'log  j (mA/cm²)', '' , boxed = 1);
+    a2.axes_visible = ["off","on","on"];
+    a2.filled = "off";
+    a2.y_label.font_size = 3;
+    curva= a2.children(1).children(1)
+    curva.thickness=3;
+    colorbar(vminlmq,vmaxlmq)
+    cbar = gce();
+    cbar.parent.title.text = "log(|Z|/Ohm cm²)";
+    cbar.parent.title.fill_mode = "on"
+    cbar.parent.title.font_size = 3
+end
+///////////////////////////////////////////////////////////////////////////
+
+clf(8)
+scf(8)
+
+plot2d(b, lvCurrent);
+xtitle( 'Polarization Curve', eix, 'log  j (mA/cm²)', '' , boxed = 1)
+filename='polarization_curve'
+eixos=get("current_axes")
+eixos.title.font_size = 3;
+eixos.x_label.font_size = 3;
+eixos.y_label.font_size = 3;
+eixos.z_label.font_size = 3;
+
 
 if wg==1 then
     eixos.x_ticks = tlist(["ticks","locations","labels"], vet_nexp, pot_string);
 end
-
 //xs2pdf(2,filename)
 
 //messagebox(["Choose the directory and name in which you want to save the image of the impedance map in logarithmic"],"EIS - Map Generator","message",["I agree"],'modal');
@@ -386,6 +478,7 @@ if ng == 1 then
     eixos.x_label.font_size = 3;
     eixos.y_label.font_size = 3;
     eixos.z_label.font_size = 3;
+    
 end
 
 messagebox(["Images are available"],"EIS - Map Generator","message",["OK"],'modal');
