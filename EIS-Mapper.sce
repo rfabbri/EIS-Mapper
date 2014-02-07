@@ -78,7 +78,7 @@ for ind=1:vnv
     if (vfreq(1)==Value(ind,id_frequency)) then
         vddp(idc)=Value(ind,id_ddp);
         vCurrent(idc)=Value(ind,id_current);
-        lvCurrent(idc)=log10(abs(Value(ind,id_current)*1000))
+        lvCurrent(idc)=log10(abs(Value(ind,id_current)*1000));
         idc=idc+1;
         nexp=nexp+1;
     end
@@ -220,6 +220,7 @@ for i=1:nexp
         complexo = matZ(i,j)*exp(matPhasRad(i,j)*(%i));
         matRealZ(i,j) = real(complexo);
         matImagZ(i,j) = imag(complexo);
+
     end
 end
 matrizNexp = []
@@ -262,15 +263,15 @@ vmaxmq=max(matZ)
 vminlmq=min(lmatZ)
 vmaxlmq=max(lmatZ)
 
-labels=["phase min (deg)"; "phase max (deg)"; "log min (Ohm.cm²)"; "log max (Ohm.cm²)"; "3D color mode (-1 for no line)"];
+labels=["phase min (deg)"; "phase max (deg)"; "log min (Ohm.cm²)"; "log max (Ohm.cm²)"; "3D color mode (-1 for no line, 0 for surface mesh, 1 for surface with lines)"];
 [ok,phasemin, phasemax, vminlmq,vmaxlmq,colormode]=...
-getvalue("Plot options", labels, list("vec",1,"vec",1,"vec",1,"vec",1,"vec",1),[string(vminaf);string(vmaxaf);string(vminlmq);string(vmaxlmq);"2"]);
+getvalue("Plot options", labels, list("vec",1,"vec",1,"vec",1,"vec",1,"vec",1),[string(vminaf);string(vmaxaf);string(vminlmq);string(vmaxlmq);"1"]);
 
 // Nyquist diagrams
 ng=messagebox(["Do you wish to generate the Nyquist diagrams?"],"EIS - Map Generator","message",["Yes" "No"],'modal');
 
 // Polarization superposition
-pg=messagebox(["Do you wish to plot the Polarization Curve over the maps?"],"EIS - Map Generator","message",["Yes" "No"],'modal');
+pg=messagebox(["Do you wish to plot the DC values over the maps?"],"EIS - Map Generator","message",["Yes" "No"],'modal');
 
 gg=messagebox(["What format do you wish to generate the images?"],"EIS - Map Generator","message",["2D image" "3D image", "Both"],'modal');
 
@@ -307,8 +308,8 @@ if pg == 1 then
     end
     a2=newaxes();
     a2.y_location = 'right'; 
-    plot2d(b, lvCurrent,leg="Polarization Curve", style=[color("black")]);
-    xtitle( '', '', 'log  j (mA/cm²)', '' , boxed = 1)
+    plot2d(b, abs(vCurrent), logflag =  "nl", leg="DC values", style=[color("black")]);
+    xtitle( '', '', '$\mathrm{j(A.cm^{-2})}$', '' , boxed = 1)
     a2.axes_visible = ["off","on","on"];
     a2.filled = "off";
     a2.y_label.font_size = 3;
@@ -337,7 +338,7 @@ cbar.parent.title.text = "|Z| / Ohm cm²";
 cbar.parent.title.fill_mode = "on"
 cbar.parent.title.font_size = 3
 grayplot(b,a,matZ)
-xtitle( 'Impedance Map', eix, 'log (f / Hz)', 'Phase' , boxed = 1 )
+xtitle( 'Bode Plot', eix, 'log (f / Hz)', 'Phase' , boxed = 1 )
 filename='impedance'
 eixos=get("current_axes")
 eixos.title.font_size = 3;
@@ -357,8 +358,8 @@ if pg == 1 then
     end
     a2=newaxes();
     a2.y_location = 'right'; 
-    plot2d(b, lvCurrent,leg="Polarization Curve", style=[color("black")]);
-    xtitle( '', '', 'log  j (mA/cm²)', '' , boxed = 1)
+    plot2d(b, abs(vCurrent), logflag =  "nl", leg="DC values", style=[color("black")]);
+    xtitle( '', '', '$\mathrm{j(A.cm^{-2})}$', '' , boxed = 1)
     a2.axes_visible = ["off","on","on"];
     a2.filled = "off";
     a2.y_label.font_size = 3;
@@ -388,7 +389,7 @@ cbar.parent.title.font_size = 3
 grayplot(b,a,lmatZ)
 //colorbar(0,6)
 //colorbar(1.1,5)
-xtitle( 'Impedance Map', eix, 'log (f / Hz)', 'Phase' , boxed = 1 )
+xtitle( 'Bode Plot', eix, 'log (f / Hz)', 'Phase' , boxed = 1 )
 filename='logimpedance'
 eixos=get("current_axes")
 eixos.title.font_size = 3;
@@ -408,8 +409,8 @@ if pg == 1 then
     end
     a2=newaxes();
     a2.y_location = 'right'; 
-    plot2d(b, lvCurrent,leg="Polarization Curve", style=[color("black")]);
-    xtitle( '', '', 'log  j (mA/cm²)', '' , boxed = 1);
+    plot2d(b, abs(vCurrent), logflag =  "nl", leg="DC values", style=[color("black")]);
+    xtitle( '', '', '$\mathrm{j(A.cm^{-2})}$', '' , boxed = 1)
     a2.axes_visible = ["off","on","on"];
     a2.filled = "off";
     a2.y_label.font_size = 3;
@@ -426,9 +427,9 @@ end
 clf(8)
 scf(8)
 
-plot2d(b, lvCurrent);
-xtitle( 'Polarization Curve', eix, 'log  j (mA/cm²)', '' , boxed = 1)
-filename='polarization_curve'
+plot2d(b, abs(vCurrent), logflag =  "nl");
+xtitle( 'DC values', eix, '$\mathrm{j(A.cm^{-2})}$', '' , boxed = 1)
+filename='dc values'
 eixos=get("current_axes")
 eixos.title.font_size = 3;
 eixos.x_label.font_size = 3;
@@ -496,7 +497,7 @@ cbar.parent.title.text = "Phase / deg";
 cbar.parent.title.fill_mode = "on"
 cbar.parent.title.font_size = 3
 
-plot3d1(b,a,matPhas)
+plot3d1(b,a,matPhas);
 
 e=gce();
 e.hiddencolor=-1;
@@ -533,7 +534,7 @@ plot3d1(b,a,matZ)
 e=gce();
 e.hiddencolor=-1;
 e.color_mode=colormode;
-xtitle( 'Impedance Map', eix, 'log (f) / Hz', '|Z| / Ohm.cm²' , boxed = 1 )
+xtitle( 'Bode Plot', eix, 'log (f) / Hz', '|Z| / Ohm.cm²' , boxed = 1 )
 filename='impedance'
 eixos=get("current_axes")
 eixos.title.font_size = 3;
@@ -569,7 +570,7 @@ ax=gca();
 ax.tight_limits = 'on';
 ax.data_bounds(1,3) = vminlmq;
 ax.data_bounds(2,3) = vmaxlmq;
-xtitle( 'Impedance Map', eix, 'log (f) / Hz', 'log(|Z|/Ohm.cm²)' , boxed = 1 )
+xtitle( 'Bode Plot', eix, 'log (f) / Hz', 'log(|Z|/Ohm.cm²)' , boxed = 1 )
 filename='logimpedance'
 ax.title.font_size = 3;
 ax.x_label.font_size = 3;
@@ -592,7 +593,7 @@ if ng == 1 then
     xset("colormap",jetcolormap(64)); 
     colorbar(0,max(matImagZ));
     cbar = gce();
-    cbar.parent.title.text = "Imaginary Component";
+    cbar.parent.title.text = "-Im";
     cbar.parent.title.fill_mode = "on"
     cbar.parent.title.font_size = 3
     if wg==1 then
@@ -605,7 +606,7 @@ if ng == 1 then
     e=gce();
     e.hiddencolor=-1;
     e.color_mode=colormode;
-    xtitle( 'Nyquist Diagram', eix, 'Real', 'Imaginary' , boxed = 1)
+    xtitle( 'Nyquist Diagram', eix, 'Real', '-Im' , boxed = 1)
     filename='nyquist'
     eixos=get("current_axes")
     eixos.title.font_size = 3;
