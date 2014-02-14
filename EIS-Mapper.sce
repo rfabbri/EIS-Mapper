@@ -27,7 +27,10 @@ id_current= find(cb=='Current (A)')
 
 erros = [];
 ind=1
-vnv=max(Value(:,id_vezes))+1;
+
+s = size(Value);
+vnv = s(1);          // Número de pontos
+//vnv=max(Value(:,id_vezes))+1;
 for ind=1:vnv
     if(Value(ind,id_frequency)>0) then
         // Verifying if |Z| > 0
@@ -51,7 +54,7 @@ numfreq=0
 i=1
 ind=1
 vfreq=max(Value(:,id_frequency))
-vnv=max(Value(:,id_vezes))+1;
+
 for ind=1:vnv
     if(Value(ind,id_frequency)>0)
         if (min(vfreq)>=Value(ind,id_frequency)) then
@@ -267,6 +270,14 @@ labels=["phase min (deg)"; "phase max (deg)"; "log min (Ohm.cm²)"; "log max (Oh
 [ok,phasemin, phasemax, vminlmq,vmaxlmq,colormode]=...
 getvalue("Plot options", labels, list("vec",1,"vec",1,"vec",1,"vec",1,"vec",1),[string(vminaf);string(vmaxaf);string(vminlmq);string(vmaxlmq);"1"]);
 
+// Validating Values
+if vmaxaf < (phasemax-1) then
+    messagebox([string(phasemax)+" degrees is higher than the maximum phase."],"EIS - Map Generator","message",["OK"],'modal');
+end
+if vminaf > (phasemin+1) then
+    messagebox([string(phasemin)+" degrees is lower than the minimum phase."],"EIS - Map Generator","message",["OK"],'modal');
+end
+
 // Nyquist diagrams
 ng=messagebox(["Do you wish to generate the Nyquist diagrams?"],"EIS - Map Generator","message",["Yes" "No"],'modal');
 
@@ -282,7 +293,7 @@ if gg==1 | gg==3 then
 clf(0)
 scf(0)
 xset("colormap",jetcolormap(512))
-colorbar(phasemin,phasemax)
+colorbar(vminaf,vmaxaf)
 cbar = gce();
 cbar.parent.title.text = "Phase / Deg";
 cbar.parent.title.fill_mode = "on"
@@ -315,7 +326,7 @@ if pg == 1 then
     a2.y_label.font_size = 3;
     curva= a2.children(1).children(1)
     curva.thickness=3;
-    colorbar(phasemin,phasemax)
+    colorbar(vminaf,vmaxaf)
     cbar = gce();
     cbar.parent.title.text = "Phase / Deg";
     cbar.parent.title.fill_mode = "on"
