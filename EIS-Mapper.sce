@@ -523,6 +523,7 @@ eixos.z_label.font_size = 3;
 eixos.tight_limits = 'on';
 eixos.data_bounds(1,3) = phasemin;
 eixos.data_bounds(2,3) = phasemax;
+eixos.zoom_box =  [min(b), min(a), max(b), max(a), phasemin, phasemax];
 
 if wg==1 then
     eixos.x_ticks = tlist(["ticks","locations","labels"], vet_nexp, pot_string);
@@ -581,6 +582,7 @@ ax=gca();
 ax.tight_limits = 'on';
 ax.data_bounds(1,3) = vminlmq;
 ax.data_bounds(2,3) = vmaxlmq;
+ax.zoom_box =  [min(b), min(a), max(b), max(a), vminlmq, vmaxlmq];
 xtitle( 'Bode Plot', eix, 'log (f) / Hz', 'log(|Z|/Ohm.cm²)' , boxed = 1 )
 filename='logimpedance'
 ax.title.font_size = 3;
