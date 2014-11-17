@@ -284,6 +284,23 @@ ng=messagebox(["Do you wish to generate the Nyquist diagrams?"],"EIS - Map Gener
 // Polarization superposition
 pg=messagebox(["Do you wish to plot the DC values over the maps?"],"EIS - Map Generator","message",["Yes" "No"],'modal');
 
+// Verificando se tem reversão de potencial
+indiceReversao = [];
+for i=2:nexp
+    if vddp(i) < vddp(i-1) then
+        // tem reversão!
+        indiceReversao = i-1;
+        break;
+    end
+end
+
+el = 2;
+if indiceReversao ~= [] then
+    // Linhas de potencial
+    el=messagebox(["Potencial reversion detected. Do you wish to plot equi-potential lines?"],"EIS - Map Generator","message",["Yes" "No"],'modal');
+end    
+
+
 gg=messagebox(["What format do you wish to generate the images?"],"EIS - Map Generator","message",["2D image" "3D image", "Both"],'modal');
 
 
@@ -296,10 +313,10 @@ xset("colormap",jetcolormap(512))
 colorbar(vminaf,vmaxaf)
 cbar = gce();
 cbar.parent.title.text = "Phase / Deg";
-cbar.parent.title.fill_mode = "on"
+cbar.parent.title.fill_mode = "off"
 cbar.parent.title.font_size = 3
 grayplot(b,a,matPhas)
-xtitle( 'Phase Map', eix, 'log (f /Hz)', 'Phase' , boxed = 1)
+xtitle( 'Phase Map', eix, 'log (f /Hz)', 'Phase' , boxed = 0)
 filename='phase deg'
 eixos=get("current_axes")
 eixos.title.font_size = 3;
@@ -320,17 +337,40 @@ if pg == 1 then
     a2=newaxes();
     a2.y_location = 'right'; 
     plot2d(b, abs(vCurrent), logflag =  "nl", leg="DC values", style=[color("black")]);
-    xtitle( '', '', '$\mathrm{j(A.cm^{-2})}$', '' , boxed = 1)
+    curva= a2.children(1).children(1)
+    curva.thickness=3;
+    
+    if  el == 1 then
+        paresReversao = [];
+        if indiceReversao ~= [] then
+            for i=indiceReversao:nexp
+                paresReversao = [paresReversao [i;(2*indiceReversao-i)] ]
+            end
+            ss=size(paresReversao);
+            s = ss(2);
+            for i = 2:2:s
+                x = [paresReversao(1,i), paresReversao(2,i)];
+                y = [vCurrent(paresReversao(1,i)), abs(vCurrent(paresReversao(2,i)))];
+                plot(x, y,'r');
+                eixos=get("current_axes");
+                curva= eixos.children(1).children(1)
+                curva.thickness=1;
+                eixos.axes_visible = ["off","off","on"];
+            end
+        end
+    end
+    
+    xtitle( '', '', '$\bold{\mathrm{j(A.cm^{-2})}}$', '' , boxed = 0);
     a2.axes_visible = ["off","on","on"];
     a2.filled = "off";
     a2.y_label.font_size = 3;
-    curva= a2.children(1).children(1)
-    curva.thickness=3;
+    a2.thickness=3
     colorbar(vminaf,vmaxaf)
     cbar = gce();
     cbar.parent.title.text = "Phase / Deg";
-    cbar.parent.title.fill_mode = "on"
+    cbar.parent.title.fill_mode = "off"
     cbar.parent.title.font_size = 3
+
 end
 ///////////////////////////////////////////////////////////////////////////
 
@@ -346,10 +386,10 @@ xset("colormap",jetcolormap(512))
 colorbar(vminmq,vmaxmq)
 cbar = gce();
 cbar.parent.title.text = "|Z| / Ohm cm²";
-cbar.parent.title.fill_mode = "on"
+cbar.parent.title.fill_mode = "off"
 cbar.parent.title.font_size = 3
 grayplot(b,a,matZ)
-xtitle( 'Bode Plot', eix, 'log (f / Hz)', 'Phase' , boxed = 1 )
+xtitle( 'Bode Plot', eix, 'log (f / Hz)', 'Phase' , boxed = 0 )
 filename='impedance'
 eixos=get("current_axes")
 eixos.title.font_size = 3;
@@ -370,16 +410,37 @@ if pg == 1 then
     a2=newaxes();
     a2.y_location = 'right'; 
     plot2d(b, abs(vCurrent), logflag =  "nl", leg="DC values", style=[color("black")]);
-    xtitle( '', '', '$\mathrm{j(A.cm^{-2})}$', '' , boxed = 1)
+    curva= a2.children(1).children(1)
+    curva.thickness=3;
+    if  el == 1 then
+        paresReversao = [];
+        if indiceReversao ~= [] then
+        for i=indiceReversao:nexp
+            paresReversao = [paresReversao [i;(2*indiceReversao-i)] ]
+        end
+        ss=size(paresReversao);
+        s = ss(2);
+        for i = 2:2:s
+            x = [paresReversao(1,i), paresReversao(2,i)];
+            y = [vCurrent(paresReversao(1,i)), abs(vCurrent(paresReversao(2,i)))];
+            plot(x, y,'r');
+            eixos=get("current_axes");
+            curva= eixos.children(1).children(1)
+            curva.thickness=1;
+            eixos.axes_visible = ["off","off","off"];
+        end
+        end
+    end
+    
+    xtitle( '', '', '$\bold{\mathrm{j(A.cm^{-2})}}$', '' , boxed = 0);
     a2.axes_visible = ["off","on","on"];
     a2.filled = "off";
     a2.y_label.font_size = 3;
-    curva= a2.children(1).children(1)
-    curva.thickness=3;
-    colorbar(vminmq,vmaxmq)
+    a2.thickness=3
+    colorbar(vminaf,vmaxaf)
     cbar = gce();
     cbar.parent.title.text = "|Z| / Ohm cm²";
-    cbar.parent.title.fill_mode = "on"
+    cbar.parent.title.fill_mode = "off"
     cbar.parent.title.font_size = 3
 end
 ///////////////////////////////////////////////////////////////////////////
@@ -395,12 +456,12 @@ xset("colormap",jetcolormap(512))
 colorbar(vminlmq,vmaxlmq)
 cbar = gce();
 cbar.parent.title.text = "log(|Z|/Ohm cm²)";
-cbar.parent.title.fill_mode = "on"
+cbar.parent.title.fill_mode = "off"
 cbar.parent.title.font_size = 3
 grayplot(b,a,lmatZ)
 //colorbar(0,6)
 //colorbar(1.1,5)
-xtitle( 'Bode Plot', eix, 'log (f / Hz)', 'Phase' , boxed = 1 )
+xtitle( 'Bode Plot', eix, 'log (f / Hz)', 'Phase' , boxed = 0 )
 filename='logimpedance'
 eixos=get("current_axes")
 eixos.title.font_size = 3;
@@ -421,35 +482,89 @@ if pg == 1 then
     a2=newaxes();
     a2.y_location = 'right'; 
     plot2d(b, abs(vCurrent), logflag =  "nl", leg="DC values", style=[color("black")]);
-    xtitle( '', '', '$\mathrm{j(A.cm^{-2})}$', '' , boxed = 1)
+    curva= a2.children(1).children(1)
+    curva.thickness=3;
+    if  el == 1 then
+        paresReversao = [];
+        if indiceReversao ~= [] then
+        for i=indiceReversao:nexp
+            paresReversao = [paresReversao [i;(2*indiceReversao-i)] ]
+        end
+        ss=size(paresReversao);
+        s = ss(2);
+        for i = 2:2:s
+            x = [paresReversao(1,i), paresReversao(2,i)];
+            y = [vCurrent(paresReversao(1,i)), abs(vCurrent(paresReversao(2,i)))];
+            plot(x, y,'r');
+            eixos=get("current_axes");
+            curva= eixos.children(1).children(1)
+            curva.thickness=1;
+            eixos.axes_visible = ["off","off","off"];
+        end
+        end
+    end
+    
+    xtitle( '', '', '$\bold{\mathrm{j(A.cm^{-2})}}$', '' , boxed = 0);
     a2.axes_visible = ["off","on","on"];
     a2.filled = "off";
     a2.y_label.font_size = 3;
-    curva= a2.children(1).children(1)
-    curva.thickness=3;
-    colorbar(vminlmq,vmaxlmq)
+    a2.thickness=3
+    colorbar(vminaf,vmaxaf)
     cbar = gce();
     cbar.parent.title.text = "log(|Z|/Ohm cm²)";
-    cbar.parent.title.fill_mode = "on"
+    cbar.parent.title.fill_mode = "off"
     cbar.parent.title.font_size = 3
+    
 end
 ///////////////////////////////////////////////////////////////////////////
 
 clf(8)
 scf(8)
 
-plot2d(b, abs(vCurrent), logflag =  "nl");
-xtitle( 'DC values', eix, '$\mathrm{j(A.cm^{-2})}$', '' , boxed = 1)
-filename='dc values'
-eixos=get("current_axes")
-eixos.title.font_size = 3;
-eixos.x_label.font_size = 3;
-eixos.y_label.font_size = 3;
-eixos.z_label.font_size = 3;
-
-
 if wg==1 then
-    eixos.x_ticks = tlist(["ticks","locations","labels"], vet_nexp, pot_string);
+    plot2d(vddp, abs(vCurrent), logflag =  "nl");
+    xtitle( 'DC values', eix, '$\mathrm{j(A.cm^{-2})}$', '' , boxed = 0)
+    filename='dc values'
+    eixos=get("current_axes")
+    eixos.title.font_size = 3;
+    eixos.x_label.font_size = 3;
+    eixos.y_label.font_size = 3;
+    eixos.z_label.font_size = 3;
+//    eixos.x_ticks = tlist(["ticks","locations","labels"], vet_nexp, pot_string);
+else
+    
+    plot2d(b, abs(vCurrent), logflag =  "nl");
+    xtitle( 'DC values', eix, '$\mathrm{j(A.cm^{-2})}$', '' , boxed = 0)
+    filename='dc values'
+    eixos=get("current_axes")
+ 
+   
+    if  el == 1 then
+        paresReversao = [];
+        if indiceReversao ~= [] then
+        for i=indiceReversao:nexp
+            paresReversao = [paresReversao [i;(2*indiceReversao-i)] ]
+        end
+        ss=size(paresReversao);
+        s = ss(2);
+        for i = 2:2:s
+            x = [paresReversao(1,i), paresReversao(2,i)];
+            y = [vCurrent(paresReversao(1,i)), abs(vCurrent(paresReversao(2,i)))];
+            plot(x, y,'r');
+            eixos=get("current_axes");
+            curva= eixos.children(1).children(1)
+            curva.thickness=1;
+//            eixos.axes_visible = ["off","off","off"];
+        end
+        end
+    end
+    
+    eixos.title.font_size = 3;
+    eixos.x_label.font_size = 3;
+    eixos.y_label.font_size = 3;
+    eixos.z_label.font_size = 3;
+//    eixos.thickness=3
+    
 end
 //xs2pdf(2,filename)
 
@@ -476,14 +591,14 @@ if ng == 1 then
     colorbar(minVal,maxVal);
     cbar = gce();
     cbar.parent.title.text = txt;
-    cbar.parent.title.fill_mode = "on"
+    cbar.parent.title.fill_mode = "off"
     cbar.parent.title.font_size = 3
 
     for i=1:nexp
         plot(matRealZ(i,:),matImagZ(i,:),matPot(:,1), "color",cores(i,:));
     end
     
-    xtitle( 'Nyquist Diagram', 'Real (Ohm.cm²)', '-Imag (Ohm.cm²)' , boxed = 1)
+    xtitle( 'Nyquist Diagram', 'Real (Ohm.cm²)', '-Imag (Ohm.cm²)' , boxed = 0)
     filename='nyquist'
     eixos=get("current_axes")
     eixos.title.font_size = 3;
@@ -505,7 +620,7 @@ xset("colormap",jetcolormap(512))
 colorbar(vminaf,vmaxaf)
 cbar = gce();
 cbar.parent.title.text = "Phase / deg";
-cbar.parent.title.fill_mode = "on"
+cbar.parent.title.fill_mode = "off"
 cbar.parent.title.font_size = 3
 
 plot3d1(b,a,matPhas);
@@ -513,7 +628,7 @@ plot3d1(b,a,matPhas);
 e=gce();
 e.hiddencolor=-1;
 e.color_mode=colormode;
-xtitle( 'Phase Map', eix, 'log (f) /Hz', 'Phase' , boxed = 1 )
+xtitle( 'Phase Map', eix, 'log (f) /Hz', 'Phase' , boxed = 0 )
 filename='phase degree'
 eixos=get("current_axes")
 eixos.title.font_size = 3;
@@ -540,13 +655,13 @@ xset("colormap",jetcolormap(512))
 colorbar(vminmq,vmaxmq)
 cbar = gce();
 cbar.parent.title.text = "|Z| / Ohm.cm²";
-cbar.parent.title.fill_mode = "on"
+cbar.parent.title.fill_mode = "off"
 cbar.parent.title.font_size = 3
 plot3d1(b,a,matZ)
 e=gce();
 e.hiddencolor=-1;
 e.color_mode=colormode;
-xtitle( 'Bode Plot', eix, 'log (f) / Hz', '|Z| / Ohm.cm²' , boxed = 1 )
+xtitle( 'Bode Plot', eix, 'log (f) / Hz', '|Z| / Ohm.cm²' , boxed = 0 )
 filename='impedance'
 eixos=get("current_axes")
 eixos.title.font_size = 3;
@@ -570,7 +685,7 @@ xset("colormap",jetcolormap(512))
 colorbar(min(lmatZ),max(lmatZ))
 cbar = gce();
 cbar.parent.title.text = "log(|Z|/Ohm.cm²)";
-cbar.parent.title.fill_mode = "on"
+cbar.parent.title.fill_mode = "off"
 cbar.parent.title.font_size = 3
 plot3d1(b,a,lmatZ);
 e=gce();
@@ -583,7 +698,7 @@ ax.tight_limits = 'on';
 ax.data_bounds(1,3) = vminlmq;
 ax.data_bounds(2,3) = vmaxlmq;
 ax.zoom_box =  [min(b), min(a), max(b), max(a), vminlmq, vmaxlmq];
-xtitle( 'Bode Plot', eix, 'log (f) / Hz', 'log(|Z|/Ohm.cm²)' , boxed = 1 )
+xtitle( 'Bode Plot', eix, 'log (f) / Hz', 'log(|Z|/Ohm.cm²)' , boxed = 0 )
 filename='logimpedance'
 ax.title.font_size = 3;
 ax.x_label.font_size = 3;
@@ -607,7 +722,7 @@ if ng == 1 then
     colorbar(0,max(matImagZ));
     cbar = gce();
     cbar.parent.title.text = "-Im";
-    cbar.parent.title.fill_mode = "on"
+    cbar.parent.title.fill_mode = "off"
     cbar.parent.title.font_size = 3
     if wg==1 then
         eix='E (V x SCE)'
@@ -619,7 +734,7 @@ if ng == 1 then
     e=gce();
     e.hiddencolor=-1;
     e.color_mode=colormode;
-    xtitle( 'Nyquist Diagram', eix, 'Real', '-Im' , boxed = 1)
+    xtitle( 'Nyquist Diagram', eix, 'Real', '-Im' , boxed = 0)
     filename='nyquist'
     eixos=get("current_axes")
     eixos.title.font_size = 3;
@@ -630,6 +745,7 @@ end
 
 messagebox(["Images are available"],"EIS - Map Generator","message",["OK"],'modal');
 end
+
 else
     disp('End');
     messagebox(["End"],"EIS - Map Generator","message",["OK"],'modal');
