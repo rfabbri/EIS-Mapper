@@ -3,6 +3,43 @@ clc
 funcprot(0)
 Des=1;
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Funções para Kramers-Kronig
+function f = imag_kk(f, vreal)
+    calc_imag = [];
+    for i = 1:length(f) 
+        vfreqaux = f;
+        vrealaux = vreal;
+        vfreqaux(:,i) = [];
+        vrealaux(:,i) = [];
+        integrando = ((vrealaux - vreal(i))./(vfreqaux.^2 - f(i)^2));  
+        integralKK = intsplin(vfreqaux,integrando);
+        calc_imag(i) = integralKK;
+    end
+    f = ((2*f./%pi)'.*calc_imag)';
+endfunction
+function f = real_kk(f, vimag)
+    calc_real = [];
+    for i = 1:length(f) 
+        vfreqaux = f;
+        vimagaux = vimag;
+        vfreqaux(:,i) = [];
+        vimagaux(:,i) = [];
+        integrando = (((vfreqaux.*vimagaux - f(i).*vimag(i))./(vfreqaux.^2 - f(i)^2)));
+        integralKK = intsplin(vfreqaux,integrando);
+        calc_real(i) = integralKK;
+    end
+    f = (((2 ./ %pi)'.*calc_real)+calc_real(length(f)))';
+endfunction
+function y = inverte(x)
+    n = length(x);
+    for i=1:n
+        y(i) = x(n+1-i);
+    end
+    y=y';
+endfunction
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 y=messagebox(["Polytechnic Institute - Rio de Janeiro State University" "Labcor - Corrosion Laboratory" "EIS - Map Generator Software"], "EIS - Map Generator","message",["Start" "Finish" "Finish Scilab"],'modal');
 if y==1 then
 
@@ -283,6 +320,9 @@ ng=messagebox(["Do you wish to generate the Nyquist diagrams?"],"EIS - Map Gener
 
 // Polarization superposition
 pg=messagebox(["Do you wish to plot the DC values over the maps?"],"EIS - Map Generator","message",["Yes" "No"],'modal');
+
+// Kramers-Kronig transform
+kk_validate=messagebox(["Do you wish to validate the data using Kramers-Kronig transform?"],"EIS - Map Generator","message",["Yes" "No"],'modal');
 
 // Verificando se tem reversão de potencial
 indiceReversao = [];
@@ -608,7 +648,7 @@ if ng == 1 then
     
 end
 
-messagebox(["Images are available"],"EIS - Map Generator","message",["OK"],'modal');
+/////////////////// fim plots 2d //////////////////////////////////
 end
 
 if gg==2 | gg==3 then
@@ -743,13 +783,83 @@ if ng == 1 then
     eixos.z_label.font_size = 3;
 end
 
-messagebox(["Images are available"],"EIS - Map Generator","message",["OK"],'modal');
+///////////////////////// fim plots 3d ///////////////////////////////////
 end
 
+if kk_validate == 1 then
+    matImagKK = [];
+    matRealKK = [];
+    vfreq = inverte(matFreq(1,:));
+    for i = 1:nexp
+        Zreal = inverte(matRealZ(i,:));
+        Zimag = -1 * abs(inverte(matImagZ(i,:)));
+        imagCalcKK = imag_kk(vfreq, Zreal);
+        realCalcKK = real_kk(vfreq, -Zimag);
+        
+        matRealKK(:,i) = inverte(realCalcKK)';
+        matImagKK(:,i) = inverte(imagCalcKK)';
+        
+//        clf(900);
+//        scf(900);
+//        plot(log10(vfreq), (Zreal),'b*');
+//        plot(log10(vfreq), -(Zimag),'r*');
+//        plot(log10(vfreq), (realCalcKK),'b');
+//        plot(log10(vfreq), -(imagCalcKK),'r');
+//        xtitle('E = ' + string(vddp(i)) + " V", 'log (f /Hz)', 'Real e Imag (Exp e KK)', '');
+//        eixos=get("current_axes")
+//        eixos.title.font_size = 3;
+//        eixos.x_label.font_size = 3;
+//        eixos.y_label.font_size = 3;
+//        eixos.z_label.font_size = 3;
+//        pause;
+    end
+    matRealKK=matRealKK';
+    matImagKK=-matImagKK';
+    erKK_real = abs(matRealKK-matRealZ)/max(abs(matRealZ));
+    erKK_imag = abs(matImagKK - matImagZ)/max(abs(matImagZ));
+    clf(9)
+    scf(9)
+    xset("colormap",jetcolormap(512))
+    colorbar(min(erKK_imag),max(erKK_imag))
+    cbar = gce();
+    cbar.parent.title.text = "Relative Deviation";
+    cbar.parent.title.fill_mode = "off";
+    cbar.parent.title.font_size = 3;
+    grayplot(b,a,(erKK_imag));
+    xtitle( 'Kramers-Kronig - Real', eix, 'log (f /Hz)', 'Error' , boxed = 1);
+    eixos=get("current_axes");
+    eixos.title.font_size = 3;
+    eixos.x_label.font_size = 3;
+    eixos.y_label.font_size = 3;
+    eixos.z_label.font_size = 3;
+    if wg==1 then
+        eixos.x_ticks = tlist(["ticks","locations","labels"], vet_nexp, pot_string);
+    end
+    
+    clf(10)
+    scf(10)
+    xset("colormap",jetcolormap(512));
+    colorbar(min(erKK_real),max(erKK_real));
+    cbar = gce();
+    cbar.parent.title.text = "Relative Deviation";
+    cbar.parent.title.fill_mode = "off";
+    cbar.parent.title.font_size = 3;
+    grayplot(b,a,(erKK_real));
+    xtitle( 'Kramers-Kronig - Imaginary', eix, 'log (f /Hz)', 'Error' , boxed = 1);
+    eixos=get("current_axes");
+    eixos.title.font_size = 3;
+    eixos.x_label.font_size = 3;
+    eixos.y_label.font_size = 3;
+    eixos.z_label.font_size = 3;
+    if wg==1 then
+        eixos.x_ticks = tlist(["ticks","locations","labels"], vet_nexp, pot_string);
+    end
+end
+
+messagebox(["Images are available"],"EIS - Map Generator","message",["OK"],'modal');
 else
     disp('End');
     messagebox(["End"],"EIS - Map Generator","message",["OK"],'modal');
 end
-
 // Close all files
 file('close',file() )
