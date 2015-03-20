@@ -18,7 +18,7 @@ function f = imag_kk(f, vreal)
     end
     f = ((2*f./%pi)'.*calc_imag)';
 endfunction
-function f = real_kk(f, vimag)
+function f = real_kk(f, vimag, idPot)
     calc_real = [];
     for i = 1:length(f) 
         vfreqaux = f;
@@ -29,7 +29,8 @@ function f = real_kk(f, vimag)
         integralKK = intsplin(vfreqaux,integrando);
         calc_real(i) = integralKK;
     end
-    f = (((2 ./ %pi)'.*calc_real)+calc_real(length(f)))';
+    Zreal_inf = matRealZ(idPot,1);
+    f = (((2 ./ %pi)'.*calc_real)+Zreal_inf);
 endfunction
 function y = inverte(x)
     n = length(x);
@@ -37,6 +38,43 @@ function y = inverte(x)
         y(i) = x(n+1-i);
     end
     y=y';
+endfunction
+function [p]=polyfit(x, y, grauPolinomio)
+    // return coefficient vector or poly if fourth string argument given
+    x = x(:); 
+    y = y(:);
+    n = length(x);
+    if length(y) <> n, error('x and y must have same length'), end
+    v = ones(n,grauPolinomio+1);
+    for i=2:grauPolinomio+1
+        v(:,i) = x.*v(:,i-1);
+    end
+    p = (v\y)';
+endfunction
+function f=extrapolacao(f, vReal, vImag)
+// min
+    
+    grauPol = 10;
+    x = f(1:10);
+    y = vReal(1:10);
+    [coefs] = polyfit(x, y, grauPol);
+    polinomio = poly(coefs, 'x', 'coeff');
+    
+    x_extra = [f(1:10).*0.01 f(1:10).*0.1];
+    curva_extra = horner(polinomio,x_extra);
+    
+    f_extra = [x_extra f];
+    vReal_extra = [curva_extra vReal]
+
+    x = f(1:10);
+    y = vImag(1:10);
+    [coefs] = polyfit(x, y, grauPol);
+    polinomio = poly(coefs, 'x', 'coeff');
+    
+    curva_extra = horner(polinomio,x_extra);
+    vImag_extra = [curva_extra vImag];
+    
+    f =[f_extra; vReal_extra; vImag_extra];
 endfunction
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -477,7 +515,7 @@ if pg == 1 then
     a2.filled = "off";
     a2.y_label.font_size = 3;
     a2.thickness=3
-    colorbar(vminaf,vmaxaf)
+    colorbar(vminlmq,vmaxlmq)
     cbar = gce();
     cbar.parent.title.text = "|Z| / Ohm cm²";
     cbar.parent.title.fill_mode = "off"
@@ -549,7 +587,7 @@ if pg == 1 then
     a2.filled = "off";
     a2.y_label.font_size = 3;
     a2.thickness=3
-    colorbar(vminaf,vmaxaf)
+    colorbar(vminlmq,vmaxlmq)
     cbar = gce();
     cbar.parent.title.text = "log(|Z|/Ohm cm²)";
     cbar.parent.title.fill_mode = "off"
@@ -787,15 +825,25 @@ end
 end
 
 if kk_validate == 1 then
-    matImagKK = [];
+        matImagKK = [];
     matRealKK = [];
     vfreq = inverte(matFreq(1,:));
     for i = 1:nexp
         Zreal = inverte(matRealZ(i,:));
         Zimag = -1 * abs(inverte(matImagZ(i,:)));
-        imagCalcKK = imag_kk(vfreq, Zreal);
-        realCalcKK = real_kk(vfreq, -Zimag);
+//        imagCalcKK = imag_kk(vfreq, Zreal);
+//        realCalcKK = real_kk(vfreq, -Zimag, i);
+
+        aux = extrapolacao(vfreq, Zreal, Zimag);
+        vfreq_extra=aux(1,:);
+        Zreal_extra=aux(2,:);
+        Zimag_extra=aux(3,:);
+        imagCalcKK_extra = imag_kk(vfreq_extra, Zreal_extra);
+        realCalcKK_extra = real_kk(vfreq_extra, -Zimag_extra,i);
+        imagCalcKK = imagCalcKK_extra(21:length(imagCalcKK_extra));
+        realCalcKK = realCalcKK_extra(21:length(realCalcKK_extra));
         
+
         matRealKK(:,i) = inverte(realCalcKK)';
         matImagKK(:,i) = inverte(imagCalcKK)';
         
@@ -815,18 +863,39 @@ if kk_validate == 1 then
     end
     matRealKK=matRealKK';
     matImagKK=-matImagKK';
-    erKK_real = abs(matRealKK-matRealZ)/max(abs(matRealZ));
-    erKK_imag = abs(matImagKK - matImagZ)/max(abs(matImagZ));
+//    erKK_real = abs(matRealKK-matRealZ)/max(abs(matRealZ));
+//    erKK_imag = abs(matImagKK - matImagZ)/max(abs(matImagZ));
+    erKK_real = (abs((matRealKK-matRealZ) ./((matRealZ)))*100);
+    erKK_imag = (abs((matImagKK - matImagZ) ./((matImagZ)))*100);
+    
+
+    for i=1:nexp
+        for j=1:numfreq
+            if erKK_real(i,j) > 100
+                 erKK_real(i,j)=100;
+            end
+        end
+    end
+    
+    for i=1:nexp
+        for j=1:numfreq
+            if erKK_imag(i,j) > 100
+                 erKK_imag(i,j)=100;
+            end
+        end
+    end
+
     clf(9)
     scf(9)
     xset("colormap",jetcolormap(512))
     colorbar(min(erKK_imag),max(erKK_imag))
     cbar = gce();
-    cbar.parent.title.text = "Relative Deviation";
+    cbar.parent.title.text = "% Deviation";
     cbar.parent.title.fill_mode = "off";
     cbar.parent.title.font_size = 3;
+//    plot3d1(b,a,erKK_imag);
     grayplot(b,a,(erKK_imag));
-    xtitle( 'Kramers-Kronig - Real', eix, 'log (f /Hz)', 'Error' , boxed = 1);
+    xtitle( 'Kramers-Kronig - Imaginary', eix, 'log (f /Hz)', 'Percentual Error' , boxed = 1);
     eixos=get("current_axes");
     eixos.title.font_size = 3;
     eixos.x_label.font_size = 3;
@@ -841,11 +910,11 @@ if kk_validate == 1 then
     xset("colormap",jetcolormap(512));
     colorbar(min(erKK_real),max(erKK_real));
     cbar = gce();
-    cbar.parent.title.text = "Relative Deviation";
+    cbar.parent.title.text = "% Deviation";
     cbar.parent.title.fill_mode = "off";
     cbar.parent.title.font_size = 3;
     grayplot(b,a,(erKK_real));
-    xtitle( 'Kramers-Kronig - Imaginary', eix, 'log (f /Hz)', 'Error' , boxed = 1);
+    xtitle( 'Kramers-Kronig - Real', eix, 'log (f /Hz)', '% Error' , boxed = 1);
     eixos=get("current_axes");
     eixos.title.font_size = 3;
     eixos.x_label.font_size = 3;
