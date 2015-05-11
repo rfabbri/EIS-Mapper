@@ -167,7 +167,7 @@ idc=1
 for ind=1:vnv
     if (Value(ind,id_frequency)~=0) then
         vZ(idc)=Value(ind,id_z)*Area;
-        vPhas(idc)=abs(Value(ind,id_phase));
+        vPhas(idc)=-(Value(ind,id_phase));
         idc=idc+1;
     end
 end
@@ -179,11 +179,12 @@ for i=1:nexp
         lmatZ(i,j)=log10(abs(vZ(I)));
         matZ(i,j)=vZ(I);
         matPhasTeste(i,j) = vPhas(I);
-           if (abs(vPhas(I))>90) then
-               matPhas(i,j)=(abs(vPhas(I))-180);
-           else
-               matPhas(i,j)=abs(vPhas(I));
-           end
+        matPhas(i,j)=(vPhas(I));
+//           if (abs(vPhas(I))>90) then
+//               matPhas(i,j)=(abs(vPhas(I))-180);
+//           else
+//               matPhas(i,j)=abs(vPhas(I));
+//           end
            I=I+1
     end
 end
